@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class CubeRainSpawner : MonoBehaviour
@@ -7,52 +8,51 @@ public class CubeRainSpawner : MonoBehaviour
     [SerializeField] private Transform _spawnAreaCenter;
 
     [Header("Spawn Area (XZ size)")]
-    [SerializeField] private Vector3 _spawnAreaSize = new Vector3(10f, 0f, 10f);
+    [SerializeField] private Vector2 _spawnAreaSize = new Vector2(10f, 10f);
 
     [Header("Spawn Timing")]
     [SerializeField] private float _spawnInterval = 0.5f;
 
-    private float _timeSinceLastSpawn;
+    private Coroutine _spawnCoroutine;
 
-    private void Awake()
+    private void OnEnable()
     {
-        if (_cubePool == null)
-            Debug.LogError("CubeRainSpawner: CubePool не назначен!");
-
-        if (_spawnAreaCenter == null)
-            Debug.LogError("CubeRainSpawner: SpawnAreaCenter не назначен!");
+        if (_spawnCoroutine == null)
+            _spawnCoroutine = StartCoroutine(SpawnRoutine());
     }
 
-    private void Update()
+    private void OnDisable()
     {
-        if (_cubePool == null || _spawnAreaCenter == null)
-            return;
-
-        _timeSinceLastSpawn += Time.deltaTime;
-
-        if (_timeSinceLastSpawn >= _spawnInterval)
+        if (_spawnCoroutine != null)
         {
-            SpawnCube();
-            _timeSinceLastSpawn = 0f;
+            StopCoroutine(_spawnCoroutine);
+            _spawnCoroutine = null;
         }
     }
 
-    private void SpawnCube()
+    private IEnumerator SpawnRoutine()
     {
-        Vector3 spawnPos = GetRandomPointInArea();
-        _cubePool.GetFromPool(spawnPos);
+        while (true)
+        {
+            if (_cubePool != null && _spawnAreaCenter != null)
+            {
+                Vector3 spawnPosition = GetRandomPointInArea();
+                _cubePool.GetFromPool(spawnPosition);
+            }
+
+            yield return new WaitForSeconds(_spawnInterval);
+        }
     }
 
     private Vector3 GetRandomPointInArea()
     {
         float spawnRadiusX = _spawnAreaSize.x * 0.5f;
-        float spawnRadiusZ = _spawnAreaSize.z * 0.5f;
+        float spawnRadiusZ = _spawnAreaSize.y * 0.5f;
 
         float offsetX = Random.Range(-spawnRadiusX, spawnRadiusX);
         float offsetZ = Random.Range(-spawnRadiusZ, spawnRadiusZ);
 
         Vector3 center = _spawnAreaCenter.position;
-
         return new Vector3(center.x + offsetX, center.y, center.z + offsetZ);
     }
 }

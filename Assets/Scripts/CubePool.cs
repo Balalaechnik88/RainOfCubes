@@ -4,43 +4,33 @@ using UnityEngine;
 public class CubePool : MonoBehaviour
 {
     [Header("Pool Settings")]
-    [SerializeField] private PooledCube _cubePrefab;
+    [SerializeField] private RainingObject _rainingObjectPrefab;
     [SerializeField] private int _initialPoolSize = 20;
     [SerializeField] private bool _canExpand = true;
 
-    private readonly Queue<PooledCube> _inactiveCubes = new Queue<PooledCube>();
+    private readonly Queue<RainingObject> _inactiveObjects = new Queue<RainingObject>();
 
     private void Awake()
     {
-        if (_cubePrefab == null)
+        if (_rainingObjectPrefab == null)
         {
-            Debug.LogError("CubePool: префаб PooledCube не назначен!");
+            Debug.LogError("CubePool: RainingObject prefab не назначен!");
             return;
         }
 
         for (int i = 0; i < _initialPoolSize; i++)
         {
-            CreateAndStoreCube();
+            CreateAndStoreObject();
         }
     }
 
-    private PooledCube CreateAndStoreCube()
+    public RainingObject GetFromPool(Vector3 position)
     {
-        PooledCube cube = Instantiate(_cubePrefab, transform);
-        cube.AssignPool(this);
-        cube.gameObject.SetActive(false);
-        _inactiveCubes.Enqueue(cube);
-
-        return cube;
-    }
-
-    public PooledCube GetFromPool(Vector3 position)
-    {
-        if (_inactiveCubes.Count == 0)
+        if (_inactiveObjects.Count == 0)
         {
             if (_canExpand)
             {
-                CreateAndStoreCube();
+                CreateAndStoreObject();
             }
             else
             {
@@ -48,15 +38,30 @@ public class CubePool : MonoBehaviour
             }
         }
 
-        PooledCube cube = _inactiveCubes.Dequeue();
-        cube.transform.position = position;
-        cube.gameObject.SetActive(true);
-        return cube;
+        RainingObject pooledObject = _inactiveObjects.Dequeue();
+        pooledObject.transform.position = position;
+        pooledObject.transform.rotation = Quaternion.identity;
+        pooledObject.gameObject.SetActive(true);
+        return pooledObject;
     }
 
-    public void ReturnToPool(PooledCube cube)
+    private RainingObject CreateAndStoreObject()
     {
-        cube.gameObject.SetActive(false);
-        _inactiveCubes.Enqueue(cube);
+        RainingObject rainingObject = Instantiate(_rainingObjectPrefab, transform);
+        rainingObject.gameObject.SetActive(false);
+        rainingObject.LifeEnded += HandleObjectLifeEnded;
+        _inactiveObjects.Enqueue(rainingObject);
+        return rainingObject;
+    }
+
+    private void HandleObjectLifeEnded(RainingObject pooledObject)
+    {
+        ReturnToPool(pooledObject);
+    }
+
+    private void ReturnToPool(RainingObject pooledObject)
+    {
+        pooledObject.gameObject.SetActive(false);
+        _inactiveObjects.Enqueue(pooledObject);
     }
 }

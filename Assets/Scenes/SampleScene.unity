@@ -630,7 +630,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc60c93d0326dc04594adc27083178ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _cubePrefab: {fileID: 4302503479868510827, guid: 359f2bb79322ba144830dba8b9986586, type: 3}
+  _rainingObjectPrefab: {fileID: 4302503479868510827, guid: 359f2bb79322ba144830dba8b9986586, type: 3}
   _initialPoolSize: 50
   _canExpand: 1
 --- !u!4 &955245360
@@ -771,7 +771,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _cubePool: {fileID: 955245359}
   _spawnAreaCenter: {fileID: 547451143}
-  _spawnAreaSize: {x: 7, y: 0, z: 7}
+  _spawnAreaSize: {x: 10, y: 10}
   _spawnInterval: 0.5
 --- !u!4 &1717593583
 Transform:
